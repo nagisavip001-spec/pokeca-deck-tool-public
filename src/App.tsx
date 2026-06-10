@@ -188,6 +188,17 @@ export default function App() {
           <DeckList onLoadDeck={handleLoadDeck} />
         )}
       </main>
+
+      <footer className="px-4 py-6 text-center">
+        <p className="text-xs text-gray-400 leading-relaxed">
+          本サイトは個人が制作した非公式のファンメイドツールです。<br />
+          株式会社ポケモン・任天堂株式会社等とは関係ありません。
+        </p>
+        <div className="flex items-center justify-center gap-4 mt-2">
+          <a href="/terms.html" className="text-xs text-blue-500 underline">利用規約・免責事項</a>
+          <a href="/privacy.html" className="text-xs text-blue-500 underline">プライバシーポリシー</a>
+        </div>
+      </footer>
     </div>
   )
 }
