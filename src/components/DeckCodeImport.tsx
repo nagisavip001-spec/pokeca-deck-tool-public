@@ -305,7 +305,10 @@ export default function DeckCodeImport({
       <section className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-3">
         <h2 className="font-semibold text-gray-700 text-sm">デッキリスト貼り付け</h2>
         <p className="text-xs text-gray-400">
-          公式サイトの「リスト表示」からコピーして貼り付け。「カード名 枚数」形式でも入力できます。
+          公式サイトの「リスト表示」からコピーして貼り付け。
+        </p>
+        <p className="text-xs text-gray-400">
+          貼り付け方：「ポケモン(枚数)」からページ右下のエネルギー欄まですべてドラッグで選択して貼り付けてください。
         </p>
         <textarea
           value={manualText}
