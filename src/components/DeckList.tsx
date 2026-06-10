@@ -16,6 +16,17 @@ const CATEGORY_ORDER = [
   'エネルギー',
 ]
 
+const CATEGORY_STYLE: Record<string, { header: string; dot: string }> = {
+  'ポケモン':         { header: 'bg-red-50    border-red-200    text-red-800',    dot: 'bg-red-400' },
+  'グッズ':           { header: 'bg-blue-50   border-blue-200   text-blue-800',   dot: 'bg-blue-400' },
+  'ポケモンのどうぐ': { header: 'bg-purple-50 border-purple-200 text-purple-800', dot: 'bg-purple-400' },
+  'テクニカルマシン': { header: 'bg-gray-100  border-gray-200   text-gray-700',   dot: 'bg-gray-400' },
+  'サポート':         { header: 'bg-green-50  border-green-200  text-green-800',  dot: 'bg-green-400' },
+  'スタジアム':       { header: 'bg-amber-50  border-amber-200  text-amber-800',  dot: 'bg-amber-400' },
+  'エネルギー':       { header: 'bg-yellow-50 border-yellow-200 text-yellow-800', dot: 'bg-yellow-400' },
+}
+const DEFAULT_STYLE = { header: 'bg-gray-50 border-gray-200 text-gray-700', dot: 'bg-gray-400' }
+
 interface Props {
   onLoadDeck: (deck: SavedDeck) => void
 }
@@ -96,19 +107,25 @@ export default function DeckList({ onLoadDeck }: Props) {
                 {/* カテゴリ別カードリスト */}
                 {grouped.length > 0 ? (
                   <div className="space-y-2">
-                    {grouped.map((group) => (
-                      <div key={group.label}>
-                        <p className="text-xs font-bold text-gray-500 mb-1">{group.label}</p>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
-                          {group.cards.map((card) => (
-                            <div key={card.name} className="flex items-center justify-between py-0.5">
-                              <span className="text-xs text-gray-700 truncate flex-1 mr-1">{card.name}</span>
-                              <span className="text-xs font-mono text-gray-400 shrink-0">×{card.count}</span>
-                            </div>
-                          ))}
+                    {grouped.map((group) => {
+                      const style = CATEGORY_STYLE[group.label] ?? DEFAULT_STYLE
+                      return (
+                        <div key={group.label}>
+                          <p className={`text-xs font-bold rounded-md border px-2 py-1 mb-1 flex items-center gap-1.5 ${style.header}`}>
+                            <span className={`w-2 h-2 rounded-full ${style.dot}`} />
+                            {group.label}
+                          </p>
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
+                            {group.cards.map((card) => (
+                              <div key={card.name} className="flex items-center justify-between py-0.5">
+                                <span className="text-xs text-gray-700 truncate flex-1 mr-1">{card.name}</span>
+                                <span className="text-xs font-mono text-gray-400 shrink-0">×{card.count}</span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 ) : (
                   <p className="text-xs text-gray-400">カード情報なし</p>
