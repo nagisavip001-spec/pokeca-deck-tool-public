@@ -699,8 +699,16 @@ function parseDeckList(text: string): DeckCard[] {
   const lines = text.split('\n').map((l) => l.trim()).filter((l) => l.length > 0)
 
   let pendingName: string | null = null
+  let currentCategory = ''
 
   for (const line of lines) {
+    const categoryMatch = line.match(/^(.+?)\s*[（(]\d+[）)]$/)
+    if (categoryMatch && CATEGORY_ORDER.includes(categoryMatch[1])) {
+      currentCategory = categoryMatch[1]
+      pendingName = null
+      continue
+    }
+
     if (/^[●▶【〔]/.test(line) || line.startsWith('//') || line.startsWith('#')) {
       continue
     }
@@ -722,7 +730,7 @@ function parseDeckList(text: string): DeckCard[] {
       const count = parseInt(countMatch[1], 10)
       if (pendingName && count >= 1 && count <= 60 && !seen.has(pendingName)) {
         seen.add(pendingName)
-        cards.push({ name: pendingName, count, category: '' })
+        cards.push({ name: pendingName, count, category: currentCategory })
       }
       pendingName = null
       continue
@@ -737,7 +745,7 @@ function parseDeckList(text: string): DeckCard[] {
       const count = parseInt(sameLineMatch[2], 10)
       if (name && count >= 1 && count <= 60 && !seen.has(name)) {
         seen.add(name)
-        cards.push({ name, count, category: '' })
+        cards.push({ name, count, category: currentCategory })
       }
       pendingName = null
       continue
