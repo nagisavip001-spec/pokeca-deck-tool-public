@@ -1,3 +1,4 @@
+import { resolve } from 'path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
@@ -14,6 +15,8 @@ export default defineConfig({
         name: 'ポケカデッキツール',
         short_name: 'ポケカツール',
         description: 'ポケモンカードゲームのデッキ分析・確率計算ツール',
+        start_url: '/app/',
+        scope: '/app/',
         theme_color: '#1e40af',
         background_color: '#ffffff',
         display: 'standalone',
@@ -33,4 +36,12 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        app: resolve(__dirname, 'app/index.html'),
+      },
+    },
+  },
 })

@@ -3,6 +3,7 @@ import ProbabilityCalculator from './components/ProbabilityCalculator'
 import HandSimulator from './components/HandSimulator'
 import DeckCodeImport from './components/DeckCodeImport'
 import DeckList from './components/DeckList'
+import AdBanner from './components/AdBanner'
 import { getDecks, type SavedDeck } from './lib/deckStorage'
 
 type Tab = 'deck' | 'opening' | 'side' | 'decklist'
@@ -95,7 +96,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-[50px]">
       <header className="bg-blue-800 text-white px-4 py-3 shadow-md">
         <div className="flex items-center justify-between">
           <div>
@@ -202,6 +203,8 @@ export default function App() {
           <a href="/privacy.html" className="text-xs text-blue-500 underline">プライバシーポリシー</a>
         </div>
       </footer>
+
+      <AdBanner />
     </div>
   )
 }

@@ -1,19 +1,530 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="ポケカツール" />
-    <meta name="theme-color" content="#1e40af" />
-    <title>ポケカデッキ分析ツール</title>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2225477722800340"
-     crossorigin="anonymous"></script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+<meta charset="UTF-8" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ポケカデッキ分析ツール｜引ける確率を、正確に。</title>
+<meta name="description" content="ポケモンカードゲームのデッキ構築を確率で最適化。初手確率・複数条件のAND/OR・固定カード指定・デッキ保存。超幾何分布に基づく無料・登録不要のファンメイド確率分析ツール。" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#eef3fa;
+  --surface:#ffffff;
+  --surface-2:#f6f9fd;
+  --ink:#0e1a30;
+  --ink-soft:#3a4a64;
+  --muted:#6b7a93;
+  --line:#dce6f2;
+  --blue:#1e40af;
+  --blue-bright:#2f6fed;
+  --blue-deep:#152e7d;
+  --cyan:#22b8e6;
+  --cyan-soft:#dff4fb;
+  --ok:#15a36a;
+  --radius:16px;
+  --radius-sm:10px;
+  --shadow:0 20px 44px -26px rgba(20,46,125,.5);
+  --shadow-sm:0 10px 24px -18px rgba(20,46,125,.55);
+  --maxw:1100px;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:"Zen Kaku Gothic New",system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  line-height:1.78;
+  -webkit-font-smoothing:antialiased;
+  font-feature-settings:"palt" 1;
+}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+.wrap{width:100%;max-width:var(--maxw);margin:0 auto;padding:0 20px}
+.mono{font-family:var(--mono)}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-weight:700;font-size:11.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--blue);
+  background:var(--cyan-soft);border:1px solid #bfe6f3;
+  padding:6px 12px;border-radius:6px;
+}
+.eyebrow::before{content:"";width:7px;height:7px;border-radius:2px;background:var(--cyan)}
+h1,h2,h3{line-height:1.3;letter-spacing:.005em;font-weight:900}
+.sec{padding:78px 0}
+.sec-head{max-width:740px;margin:0 auto 42px}
+.sec-head.center{text-align:center;margin-left:auto;margin-right:auto}
+.sec-head h2{font-size:clamp(26px,5.8vw,40px)}
+.sec-head p{margin-top:14px;color:var(--ink-soft);font-size:16px}
+.kicker{font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.2em;color:var(--blue-bright);text-transform:uppercase;display:inline-flex;align-items:center;gap:8px}
+.kicker::before{content:"";width:22px;height:2px;background:var(--cyan)}
+
+/* ---------- header ---------- */
+header.nav{position:sticky;top:0;z-index:50;background:rgba(238,243,250,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav-in{display:flex;align-items:center;justify-content:space-between;height:64px}
+.brand{display:flex;align-items:center;gap:11px;font-weight:900;font-size:16.5px}
+.logo{
+  width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--blue),var(--blue-bright));position:relative;
+  display:grid;place-items:center;box-shadow:var(--shadow-sm);
+}
+.logo::before{content:"";width:13px;height:13px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 3px rgba(255,255,255,.9)}
+.nav-cta{display:inline-flex;align-items:center;gap:8px;background:var(--blue);color:#fff;font-weight:700;font-size:14px;padding:10px 16px;border-radius:8px;box-shadow:var(--shadow-sm)}
+.nav-cta:hover{background:var(--blue-deep)}
+.nav-links{display:none;gap:26px;font-size:14px;font-weight:700;color:var(--ink-soft)}
+.nav-links a:hover{color:var(--blue)}
+@media(min-width:860px){.nav-links{display:flex}}
+
+/* ---------- hero ---------- */
+.hero{position:relative;overflow:hidden;padding:52px 0 66px;background:
+  linear-gradient(180deg,#ffffff 0%,var(--bg) 100%)}
+.hero::before{content:"";position:absolute;inset:0;background-image:
+  linear-gradient(rgba(30,64,175,.05) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(30,64,175,.05) 1px,transparent 1px);
+  background-size:28px 28px;-webkit-mask:radial-gradient(620px 420px at 80% 0%,#000,transparent 70%);mask:radial-gradient(620px 420px at 80% 0%,#000,transparent 70%);pointer-events:none}
+.hero-grid{position:relative;display:grid;grid-template-columns:1fr;gap:42px;align-items:center}
+@media(min-width:920px){.hero-grid{grid-template-columns:1.05fr .95fr}}
+.hero h1{font-size:clamp(27px,6.6vw,46px);letter-spacing:0;white-space:nowrap}
+.hero h1 .hl{color:var(--blue);position:relative}
+.hero h1 .accent{color:var(--cyan)}
+.hero p.lead{margin-top:20px;font-size:clamp(14px,3.8vw,18px);color:var(--ink-soft);max-width:40ch}
+.hero-cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-weight:800;border-radius:10px;cursor:pointer;border:none;font-family:inherit;transition:transform .14s ease,box-shadow .14s ease,background .14s ease}
+.btn-primary{background:var(--blue);color:#fff;font-size:16.5px;padding:16px 26px;box-shadow:0 12px 26px -12px rgba(30,64,175,.7)}
+.btn-primary:hover{background:var(--blue-deep);transform:translateY(-2px);box-shadow:0 16px 30px -12px rgba(30,64,175,.75)}
+.btn-primary .arrow{font-family:var(--mono);font-weight:800}
+.btn-ghost{background:var(--surface);color:var(--ink);font-size:15px;padding:15px 22px;border:1.5px solid var(--line);box-shadow:var(--shadow-sm)}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue)}
+.trust{display:flex;flex-wrap:wrap;gap:18px;margin-top:22px;font-size:13px;color:var(--muted);font-weight:700}
+.trust span{display:inline-flex;align-items:center;gap:7px}
+.trust span::before{content:"✓";color:var(--ok);font-weight:900}
+
+/* hero visual: data panel */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.panel-top{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.panel-top .dot{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.panel-top .dot.b{background:var(--blue-bright)}
+.panel-top .tt{margin-left:6px;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.08em}
+.panel-body{padding:22px;display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center}
+.donut{width:128px;height:128px;border-radius:50%;background:conic-gradient(var(--blue) 0 70.6%,var(--line) 70.6% 100%);display:grid;place-items:center;position:relative}
+.donut::after{content:"";position:absolute;width:92px;height:92px;border-radius:50%;background:var(--surface)}
+.donut .v{position:relative;z-index:2;text-align:center}
+.donut .v b{font-family:var(--mono);font-weight:800;font-size:30px;color:var(--blue);display:block;line-height:1}
+.donut .v small{font-size:10.5px;color:var(--muted);font-weight:700}
+.bars{display:grid;gap:10px}
+.bar-row{display:grid;grid-template-columns:56px 1fr 48px;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--ink-soft)}
+.bar-track{height:8px;border-radius:999px;background:var(--line);overflow:hidden}
+.bar-track i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--cyan),var(--blue))}
+.bar-row .pct{text-align:right;color:var(--blue)}
+.panel-foot{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;border-top:1px solid var(--line);background:var(--surface-2);font-family:var(--mono);font-size:11px;font-weight:700;color:var(--muted)}
+.panel-foot .ok{color:var(--ok)}
+
+/* ---------- ad ---------- */
+.ad{margin:16px auto;max-width:var(--maxw);padding:0 20px}
+.ad-inner{border:1px dashed #b9c9de;border-radius:var(--radius-sm);background:repeating-linear-gradient(135deg,#fff 0 12px,#f4f8fd 12px 24px);min-height:106px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#9fb0c8}
+.ad-inner .t{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase}
+.ad-inner .d{font-size:13px;font-weight:700;color:#8c9fba}
+
+/* ---------- problem ---------- */
+.problem{background:var(--surface)}
+.q-list{display:grid;gap:14px;max-width:720px}
+.q{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:flex-start;border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:var(--radius-sm);padding:18px 20px;background:var(--surface-2)}
+.q .mk{flex:none;width:30px;height:30px;border-radius:7px;background:var(--blue);color:#fff;display:grid;place-items:center;font-weight:800;font-family:var(--mono);font-size:14px}
+.q p{font-size:15px;color:var(--ink-soft);font-weight:500}
+.q p b{color:var(--ink);font-weight:900}
+.problem .turn{max-width:720px;margin:30px 0 0;font-size:clamp(18px,4.6vw,24px);font-weight:900;color:var(--ink);border-top:1px solid var(--line);padding-top:26px}
+.problem .turn em{color:var(--blue);font-style:normal}
+
+/* ---------- features ---------- */
+.feat-grid{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:680px){.feat-grid{grid-template-columns:1fr 1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow-sm);position:relative;transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease}
+.card:hover{transform:translateY(-3px);border-color:var(--blue-bright);box-shadow:var(--shadow)}
+.card .num{position:absolute;top:18px;right:20px;font-family:var(--mono);font-weight:800;font-size:13px;color:#c7d6e8}
+.icon{width:50px;height:50px;border-radius:12px;display:grid;place-items:center;margin-bottom:16px;background:var(--cyan-soft);border:1px solid #bfe6f3}
+.icon svg{width:26px;height:26px}
+.card h3{font-size:18.5px;margin-bottom:8px}
+.card p{font-size:14.5px;color:var(--ink-soft);font-weight:500}
+.card .chip{display:inline-block;margin-top:14px;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--blue);background:var(--surface-2);border:1px solid var(--line);padding:4px 10px;border-radius:6px}
+
+/* ---------- steps ---------- */
+.steps{background:var(--surface)}
+.step-grid{display:grid;grid-template-columns:1fr;gap:16px;counter-reset:s}
+@media(min-width:760px){.step-grid{grid-template-columns:repeat(3,1fr)}.step-grid .step{display:flex;flex-direction:column}.step-grid .step .demo{margin-top:auto;height:190px;display:flex;flex-direction:column;justify-content:flex-start}}
+.step{position:relative;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius);padding:26px 24px}
+.step .badge{counter-increment:s;width:46px;height:46px;margin-bottom:14px;border-radius:12px;background:var(--blue);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-weight:800;font-size:20px}
+.step .badge::before{content:"0" counter(s)}
+.step h3{font-size:17.5px;margin-bottom:8px}
+.step p{font-size:14px;color:var(--ink-soft);font-weight:500}
+.step .demo{margin-top:16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:12px;font-family:var(--mono);font-size:12px;color:var(--ink-soft)}
+.step .demo .row{display:flex;justify-content:space-between;padding:2px 0}
+.step .demo .row b{color:var(--blue)}
+.step .demo .crow{display:flex;align-items:center;gap:8px;padding:3px 0}
+.step .demo .cbx{flex:none;width:15px;height:15px;border-radius:4px;background:var(--blue);position:relative}
+.step .demo .cbx::after{content:"";position:absolute;left:5px;top:2px;width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+@media(min-width:760px){.step:not(:last-child)::after{content:"›";position:absolute;top:36px;right:-15px;font-family:var(--mono);font-weight:800;color:var(--cyan);font-size:30px;z-index:2}}
+
+/* ---------- recommend ---------- */
+.rec{display:grid;grid-template-columns:1fr;gap:30px;align-items:center}
+@media(min-width:820px){.rec{grid-template-columns:1.1fr .9fr}}
+.rec-list{display:grid;gap:12px}
+.rec-item{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:15px 18px;font-weight:700;font-size:15px}
+.rec-item .ck{flex:none;width:26px;height:26px;border-radius:7px;background:var(--ok);color:#fff;display:grid;place-items:center;font-weight:900;font-size:14px}
+.rec-panel{background:linear-gradient(160deg,var(--blue) 0%,var(--blue-deep) 100%);color:#fff;border-radius:var(--radius);padding:32px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.rec-panel::after{content:"";position:absolute;right:-40px;bottom:-40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(34,184,230,.45),transparent 70%)}
+.rec-panel .kicker{color:#aee3f4}
+.rec-panel .kicker::before{background:var(--cyan)}
+.rec-panel h3{font-size:22px;margin:10px 0 12px;position:relative}
+.rec-panel p{color:#d4e0f5;font-size:14.5px;font-weight:500;position:relative}
+.stat-row{display:flex;gap:14px;margin-top:24px;position:relative}
+.stat{flex:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:14px;text-align:center}
+.stat .v{font-family:var(--mono);font-weight:800;font-size:22px;color:#fff;white-space:nowrap}
+.stat .k{font-size:11px;color:#bcd0ee;font-weight:700;margin-top:2px}
+
+/* ---------- faq ---------- */
+.faq-list{max-width:760px;margin:0 auto;display:grid;gap:12px}
+.faq{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden}
+.faq summary{list-style:none;cursor:pointer;padding:18px 22px;display:flex;align-items:center;gap:14px;font-weight:900;font-size:16px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .qmk{flex:none;width:25px;height:25px;border-radius:6px;background:var(--blue);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-weight:800;font-size:13px}
+.faq summary .tw{margin-left:auto;font-family:var(--mono);font-weight:800;color:var(--blue);transition:transform .2s ease}
+.faq[open] summary .tw{transform:rotate(45deg)}
+.faq .ans{padding:0 22px 20px 61px;color:var(--ink-soft);font-size:14.5px;font-weight:500}
+
+/* ---------- final cta ---------- */
+.final{padding:78px 0}
+.final-card{background:linear-gradient(150deg,var(--blue) 0%,var(--blue-deep) 100%);color:#fff;border-radius:22px;padding:clamp(36px,7vw,58px) 24px;box-shadow:var(--shadow);position:relative;overflow:hidden;text-align:center}
+.final-card::before{content:"";position:absolute;inset:0;background-image:
+  linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);
+  background-size:30px 30px;-webkit-mask:radial-gradient(500px 260px at 50% 0%,#000,transparent 70%);mask:radial-gradient(500px 260px at 50% 0%,#000,transparent 70%)}
+.final-card h2{position:relative;font-size:clamp(26px,6.2vw,40px);color:#fff}
+.final-card p{position:relative;margin:14px auto 26px;max-width:40ch;color:#d4e0f5;font-weight:500;font-size:16px}
+.final-card .btn-primary{background:#fff;color:var(--blue);box-shadow:0 14px 30px -12px rgba(0,0,0,.4)}
+.final-card .btn-primary:hover{background:var(--cyan-soft)}
+.final-card small{position:relative;display:block;margin-top:16px;color:#bcd0ee;font-size:12px;font-weight:700}
+
+/* ---------- footer ---------- */
+footer{background:var(--ink);color:#a9b7cd;padding:54px 0 30px}
+.foot-grid{display:grid;grid-template-columns:1fr;gap:30px}
+@media(min-width:720px){.foot-grid{grid-template-columns:1.4fr 1fr 1fr}}
+.foot-brand{display:flex;align-items:center;gap:11px;color:#fff;font-weight:900;font-size:16.5px;margin-bottom:12px}
+.foot p.desc{font-size:13.5px;line-height:1.75;max-width:36ch}
+.foot h4{color:#fff;font-size:12px;font-family:var(--mono);letter-spacing:.16em;text-transform:uppercase;margin-bottom:14px}
+.foot ul{list-style:none;display:grid;gap:10px;font-size:14px}
+.foot ul a{color:#a9b7cd}
+.foot ul a:hover{color:var(--cyan)}
+.foot-bottom{border-top:1px solid rgba(255,255,255,.12);margin-top:34px;padding-top:20px;font-size:11.5px;line-height:1.75;color:#7d8da6}
+.foot-bottom .legal{margin-top:8px}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="#top"><span class="logo"></span>ポケカデッキ分析ツール</a>
+    <nav class="nav-links">
+      <a href="#features">機能</a>
+      <a href="#steps">使い方</a>
+      <a href="#recommend">おすすめ</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a class="nav-cta" href="/app/">ツールを開く<span class="mono">↗</span></a>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow">無料・登録不要 / 確率分析</span>
+        <h1>引ける確率を、<span class="hl">正確に</span>。<br />勝ち筋は<span class="accent">計算</span>できる。</h1>
+        <p class="lead"><span style="white-space:nowrap">初手・複数条件成立・絶対欲しい1枚まで。</span><br />欲しいカードを引く確率を、<br />超幾何分布で厳密計算。<br />デッキ構築の「再現性」を数字で可視化するツールです。</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="/app/">ツールを使ってみる<span class="arrow">→</span></a>
+          <a class="btn btn-ghost" href="#features">機能を見る</a>
+        </div>
+        <div class="trust">
+          <span>無料</span>
+          <span>登録不要</span>
+          <span>スマホ最適化</span>
+        </div>
+      </div>
+
+      <div class="panel" aria-hidden="true">
+        <div class="panel-top">
+          <span class="dot"></span><span class="dot"></span><span class="dot b"></span>
+          <span class="tt">probability_result</span>
+        </div>
+        <div class="panel-body">
+          <div class="donut"><span class="v"><b>70.6%</b><small>初手成功率</small></span></div>
+          <div class="bars">
+            <div class="bar-row"><span>採用9枚</span><span class="bar-track"><i style="width:75%"></i></span><span class="pct">75.1%</span></div>
+            <div class="bar-row"><span>採用10枚</span><span class="bar-track"><i style="width:79%"></i></span><span class="pct">79.0%</span></div>
+            <div class="bar-row"><span>採用11枚</span><span class="bar-track"><i style="width:82%"></i></span><span class="pct">82.4%</span></div>
+            <div class="bar-row"><span>採用12枚</span><span class="bar-track"><i style="width:85%"></i></span><span class="pct">85.3%</span></div>
+          </div>
+        </div>
+        <div class="panel-foot">
+          <span>山札 60 / 初手 8 / 採用 8</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AD 1 -->
+  <div class="ad" aria-label="広告枠">
+    <div class="ad-inner">
+      <span class="t">広告 / Sponsored</span>
+      <span class="d">Google AdSense レスポンシブ広告</span>
+    </div>
+  </div>
+
+  <!-- PROBLEM -->
+  <section class="problem sec">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="kicker">The Problem</span>
+        <h2>その判断、「感覚」で<br class="sp-br" />詰め切れていますか。</h2>
+        <p>対戦中の一手、構築の一枚。勝敗を分ける確率を、なんとなくで握っていないか。</p>
+      </div>
+      <div class="q-list">
+        <div class="q"><span class="mk">?</span><p><b>「このカード4枚採用で、初手に来る確率は何％か」</b>──手応えだけで投入枚数を決めていて、根拠を説明できない。</p></div>
+        <div class="q"><span class="mk">?</span><p><b>「マリガンとなる確率は何％か」</b>──構成の段階で相手を有利にしてしまっていないか。</p></div>
+        <div class="q"><span class="mk">?</span><p><b>「AとBを両方そろえたい。どのくらい現実的か」</b>──複数条件が絡んだ瞬間、暗算では追いきれなくなる。</p></div>
+      </div>
+      <p class="turn">構築の再現性は、<em>運ではなく数字</em>で詰める。</p>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features sec" id="features">
+    <div class="wrap">
+      <div class="sec-head center">
+        <span class="kicker">Features</span>
+        <h2>勝率を上げる、確率把握。</h2>
+        <p>超幾何分布に基づく厳密計算を、専門知識ゼロでも使える形に。</p>
+      </div>
+      <div class="feat-grid">
+        <div class="card">
+          <span class="num">01</span>
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h5"/></svg>
+          </div>
+          <h3>初手確率計算</h3>
+          <p>山札枚数と採用枚数を入れるだけ。初手8枚に、狙ったカードを1枚以上引ける確率を即座に算出。先攻・後攻も切り替え可能。</p>
+          <span class="chip">少なくとも1枚 / ちょうどn枚</span>
+        </div>
+        <div class="card">
+          <span class="num">02</span>
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="12" r="5"/><circle cx="16" cy="12" r="5"/></svg>
+          </div>
+          <h3>複数条件のAND / OR確率</h3>
+          <p>「AとB両方ほしい」「AまたはBどちらか」など、複数カードが絡む同時条件も自由に設定。複雑な初動も一発で可視化します。</p>
+          <span class="chip">AND・OR を自由に組合せ</span>
+        </div>
+        <div class="card">
+          <span class="num">03</span>
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 12l2 2 4-4"/></svg>
+          </div>
+          <h3>固定カード指定</h3>
+          <p>「このカードは確定で持っている」前提を固定し、残りを引く確率を計算。手札に来た状況を仮定したシミュレーションができます。</p>
+          <span class="chip">条件付き確率に対応</span>
+        </div>
+        <div class="card">
+          <span class="num">04</span>
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="11" height="14" rx="2"/><rect x="10" y="4" width="11" height="14" rx="2"/></svg>
+          </div>
+          <h3>手札テスト</h3>
+          <p>ランダムに初手を引いて、実際の手札を疑似体験。引き直しを繰り返しながら、デッキの初動の安定感を肌で確かめられます。</p>
+          <span class="chip">ランダム初手シミュレーション</span>
+        </div>
+        <div class="card">
+          <span class="num">05</span>
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="7" height="5" rx="1"/><rect x="13" y="3" width="7" height="5" rx="1"/><rect x="4" y="10" width="7" height="5" rx="1"/><rect x="13" y="10" width="7" height="5" rx="1"/><rect x="4" y="17" width="7" height="5" rx="1"/><rect x="13" y="17" width="7" height="5" rx="1"/></svg>
+          </div>
+          <h3>サイド落ち確認</h3>
+          <p>キーカードがサイドに落ちる確率を、採用枚数ごとに計算。複数枚が同時に落ちてしまうケースまで事前に把握できます。</p>
+          <span class="chip">サイド6枚を考慮</span>
+        </div>
+        <div class="card">
+          <span class="num">06</span>
+          <div class="icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#1e40af" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7"/></svg>
+          </div>
+          <h3>デッキ保存</h3>
+          <p>デッキを保存して、いつでも呼び出し。複数の構築の確率を比較し採用枚数の最適解へ。</p>
+          <span class="chip">複数デッキを比較</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEPS -->
+  <section class="steps sec" id="steps">
+    <div class="wrap">
+      <div class="sec-head center">
+        <span class="kicker">How to use</span>
+        <h2>使い方は、たった3ステップ</h2>
+        <p>デッキリストを貼って、選んで、確認するだけ。約30秒で確率が出ます。</p>
+      </div>
+      <div class="step-grid">
+        <div class="step">
+          <div class="badge"></div>
+          <h3>デッキリストを貼り付け</h3>
+          <p>公式サイトのデッキ表示→リスト表示にしてテキストをそのままペースト。カテゴリごとの枚数を自動で読み取ります。</p>
+          <div class="demo">
+            <div class="row"><span>ポケモン</span><b>19</b></div>
+            <div class="row"><span>グッズ</span><b>18</b></div>
+            <div class="row"><span>ポケモンのどうぐ</span><b>1</b></div>
+            <div class="row"><span>サポート</span><b>11</b></div>
+            <div class="row"><span>スタジアム</span><b>3</b></div>
+            <div class="row"><span>エネルギー</span><b>8</b></div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="badge"></div>
+          <h3>調べたいカードを選択</h3>
+          <p>初動に欲しいカードを指定。<br />指定方法はリスト内からチェックするだけ。</p>
+          <div class="demo">
+            <div class="crow"><span class="cbx"></span>スピンロトム ×1</div>
+            <div class="crow"><span class="cbx"></span>なかよしポフィン ×4</div>
+            <div class="crow"><span class="cbx"></span>ポケパッド ×4</div>
+            <div class="crow"><span class="cbx"></span>ヒカリ ×4</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="badge"></div>
+          <h3>確率を確認</h3>
+          <p>選択画面下部の「確率を計算する」を実行すると条件を満たす確率を即表示。AND / OR・固定条件など、調べたい条件に合った確率を確認します。</p>
+          <div class="demo">
+            <div class="row"><span>初手成功率</span><b>87.7%</b></div>
+            <div class="row"><span>+1枚採用時</span><b>89.8%</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RECOMMEND -->
+  <section class="recommend sec" id="recommend">
+    <div class="wrap rec">
+      <div>
+        <span class="eyebrow">こんな人におすすめ</span>
+        <div class="rec-list" style="margin-top:18px">
+          <div class="rec-item"><span class="ck">✓</span>大会・シティリーグで勝ち越したい</div>
+          <div class="rec-item"><span class="ck">✓</span>構築の再現性を数字で詰めたい</div>
+          <div class="rec-item"><span class="ck">✓</span>配信・記事で根拠を示したい</div>
+          <div class="rec-item"><span class="ck">✓</span>初心者で確率の感覚を掴みたい</div>
+        </div>
+      </div>
+      <div class="rec-panel">
+        <span class="kicker">Who it's for</span>
+        <h3>勝ちにこだわる、すべてのプレイヤーへ。</h3>
+        <p>シティリーグや自主大会で勝ち越したい人から、確率の感覚をこれから掴みたい初心者まで。「再現性」を数字で語れる構築は、確かな武器になります。</p>
+        <div class="stat-row">
+          <div class="stat"><div class="v">8枚</div><div class="k">初手の判断を最適化</div></div>
+          <div class="stat"><div class="v">AND/OR</div><div class="k">複合条件に対応</div></div>
+          <div class="stat" style="display:flex;align-items:center;justify-content:center"><div class="v">¥0</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AD 2 -->
+  <div class="ad" aria-label="広告枠">
+    <div class="ad-inner">
+      <span class="t">広告 / Sponsored</span>
+      <span class="d">Google AdSense レスポンシブ広告</span>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <section class="faq sec" id="faq">
+    <div class="wrap">
+      <div class="sec-head center">
+        <span class="kicker">FAQ</span>
+        <h2>よくある質問</h2>
+        <p>使いはじめる前に、気になるポイントをまとめました。</p>
+      </div>
+      <div class="faq-list">
+        <details class="faq" open>
+          <summary><span class="qmk">Q</span>本当に無料で使えますか？<span class="tw">+</span></summary>
+          <div class="ans">はい。すべての機能を無料・登録不要でご利用いただけます。アカウント作成やアプリのインストールも必要ありません。ブラウザからすぐに使い始められます。</div>
+        </details>
+        <details class="faq">
+          <summary><span class="qmk">Q</span>スマホでも使えますか？<span class="tw">+</span></summary>
+          <div class="ans">スマートフォン表示に最適化しています。片手で確率をサッと確認できます。タブレット・PCにも対応しています。</div>
+        </details>
+        <details class="faq">
+          <summary><span class="qmk">Q</span>計算の根拠は何ですか？<span class="tw">+</span></summary>
+          <div class="ans">トレーディングカードの確率計算で標準的に用いられる「超幾何分布」に基づいた厳密計算です。試行回数によるシミュレーション（近似）ではなく理論値を直接算出するため、ブレのない数値が得られます。</div>
+        </details>
+        <details class="faq">
+          <summary><span class="qmk">Q</span>公式ツールですか？<span class="tw">+</span></summary>
+          <div class="ans">いいえ。本サイトは個人が制作・運営する非公式のファンメイドツールです。株式会社ポケモン、および関連企業とは一切関係ありません。デッキデータの取り扱いについても、当サイトの責任の範囲でご利用ください。</div>
+        </details>
+        <details class="faq">
+          <summary><span class="qmk">Q</span>どんな山札枚数・フォーマットに対応していますか？<span class="tw">+</span></summary>
+          <div class="ans">山札の総枚数や引く枚数は自由に設定できるため、標準的な構築はもちろん、特殊なレギュレーションや思考実験にも柔軟に対応します。採用枚数を変えながら、その場で確率の変化を比較できます。</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="final">
+    <div class="wrap">
+      <div class="final-card">
+        <h2>勝ち筋を、数字で握ろう。</h2>
+        <p>登録もインストールも不要。今すぐデッキリストを貼って、初手の確率を確かめてみてください。</p>
+        <a class="btn btn-primary" href="/app/">ツールを使ってみる<span class="arrow">→</span></a>
+        <small>※ 別ページ（確率分析ツール本体）が開きます</small>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot">
+        <div class="foot-brand"><span class="logo"></span>ポケカデッキ分析ツール</div>
+        <p class="desc">ポケモンカードゲームのデッキ構築を、確率で最適化するためのファンメイド分析ツール。初手確率から複合条件まで、勝ち筋を数字で可視化します。</p>
+      </div>
+      <div class="foot">
+        <h4>Menu</h4>
+        <ul>
+          <li><a href="#features">機能紹介</a></li>
+          <li><a href="#steps">使い方</a></li>
+          <li><a href="#faq">よくある質問</a></li>
+          <li><a href="/app/">ツールを開く ↗</a></li>
+        </ul>
+      </div>
+      <div class="foot">
+        <h4>About</h4>
+        <ul>
+          <li><a href="privacy.html">プライバシーポリシー</a></li>
+          <li><a href="terms.html">利用規約</a></li>
+          <li><a href="contact.html">お問い合わせ</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <div>© 2026 ポケカデッキ分析ツール</div>
+      <div class="legal">本サイトは個人が運営する非公式のファンメイドツールであり、株式会社ポケモンおよび関連企業とは一切関係ありません。「ポケットモンスター」「ポケモンカードゲーム」は株式会社ポケモン・任天堂・ゲームフリーク・クリーチャーズの商標または登録商標です。</div>
+    </div>
+  </div>
+</footer>
+
+</body>
 </html>
