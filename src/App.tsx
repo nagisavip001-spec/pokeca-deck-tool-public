@@ -99,7 +99,7 @@ export default function App() {
       <header className="bg-blue-800 text-white px-4 py-3 shadow-md">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-lg font-bold tracking-tight">ポケカデッキツール</h1>
+            <h1 className="text-lg font-bold tracking-tight">ポケカデッキ分析ツール</h1>
             <p className="text-blue-200 text-xs mt-0.5">確率計算・デッキ分析</p>
           </div>
           <button
