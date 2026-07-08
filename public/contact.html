@@ -69,9 +69,9 @@
       <button type="submit" class="submit">送信する</button>
 
       <div class="form-ok" id="formOk">
-        ✓ 送信ありがとうございます。内容を確認のうえ、必要に応じてご返信いたします。
+        ✓ メールアプリが起動します。内容をご確認のうえ、そのまま送信してください。
       </div>
-      <p class="hint" style="margin-top:14px">※ 本フォームはデモ表示です。実際の運用では、送信先のメールアドレスやフォーム送信サービス（Googleフォーム・Formspree等）との連携が必要です。</p>
+      <p class="hint" style="margin-top:14px">※ 送信ボタンを押すと、入力内容を差し込んだ状態でお使いのメールアプリが開きます。メールアプリが起動しない場合は、上記の contact.oyasai@gmail.com へ直接お送りください。</p>
     </form>
   </article>
 </main>
@@ -101,9 +101,19 @@
       form.reportValidity();
       return;
     }
+    var category = form.category.value;
+    var name = form.name.value;
+    var email = form.email.value;
+    var message = form.message.value;
+    var subject = encodeURIComponent('【お問い合わせ】' + category);
+    var body = encodeURIComponent(
+      'お名前: ' + name + '\n' +
+      'メールアドレス: ' + email + '\n' +
+      '種別: ' + category + '\n\n' +
+      message
+    );
+    window.location.href = 'mailto:contact.oyasai@gmail.com?subject=' + subject + '&body=' + body;
     ok.classList.add('show');
-    form.querySelector('.submit').textContent = '送信済み';
-    form.querySelector('.submit').disabled = true;
     ok.scrollIntoView({block:'nearest'});
   });
 })();
