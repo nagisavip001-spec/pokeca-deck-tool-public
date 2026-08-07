@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# 内部自動化スクリプト（ローカルPCパス・自動生成プロンプトを含むため非公開）
+routines/

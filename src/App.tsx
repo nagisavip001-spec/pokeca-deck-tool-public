@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import ProbabilityCalculator from './components/ProbabilityCalculator'
 import HandSimulator from './components/HandSimulator'
 import DeckCodeImport from './components/DeckCodeImport'
@@ -163,6 +164,12 @@ export default function App() {
         <TabButton active={activeTab === 'decklist'} onClick={() => setActiveTab('decklist')}>
           デッキ一覧
         </TabButton>
+        <Link
+          to="/articles"
+          className="flex-1 py-3 text-xs font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 text-center"
+        >
+          コラム
+        </Link>
       </nav>
 
       <main className="px-4 py-5 max-w-lg mx-auto">
