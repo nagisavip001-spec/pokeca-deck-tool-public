@@ -45,7 +45,7 @@ const articles: Article[] = Object.entries(rawModules).map(([path, raw]) => {
   return parseFrontmatter(raw as string, slug)
 })
 
-articles.sort((a, b) => (a.date < b.date ? 1 : -1))
+articles.sort((a, b) => (a.date > b.date ? 1 : -1))
 
 export function getAllArticles(): ArticleMeta[] {
   return articles.map(({ bodyMarkdown: _bodyMarkdown, ...meta }) => meta)
